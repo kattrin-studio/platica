@@ -1748,7 +1748,7 @@ function refreshChips(){
 })();
 
 /* ---------- Inicio de sesión con Google ---------- */
-let GOOGLE_CLIENT_ID = '';           // PRODUCCIÓN: escribe aquí el ID de cliente OAuth (termina en .apps.googleusercontent.com) para que todos entren directo. Vacío = se pide en la pantalla de acceso, solo para pruebas del administrador.
+let GOOGLE_CLIENT_ID = '636611674872-ql5j8qqr1d4qgngml45rrb5st2sfeabb.apps.googleusercontent.com'; // ID de cliente web de Google para este sitio.
 const DOMINIOS_PERMITIDOS = [];      // Opcional, solo para avisar antes: p. ej. ['miempresa.com']. La regla real vive en el código de Apps Script (PERMITIDOS).
 let SESSION = null;                  // {token, exp, sub, email, name} o {demo:true}
 const CLIENT_ID_RE = /^[\w.-]+\.apps\.googleusercontent\.com$/;
@@ -1888,7 +1888,7 @@ const GS_CODE = String.raw`// Pega este código en Extensiones > Apps Script de 
 // 1) Pega en CLIENT_ID el mismo ID de cliente de Google que usa la app.
 // 2) ES OBLIGATORIO: agrega a PERMITIDOS los correos autorizados. Sin lista, el servidor no escribe.
 // Cada persona tiene una pestaña propia derivada del identificador Google sub, no del dato que envía el navegador.
-const CLIENT_ID = 'PEGA-AQUI-EL-ID-DE-CLIENTE.apps.googleusercontent.com';
+const CLIENT_ID = '636611674872-ql5j8qqr1d4qgngml45rrb5st2sfeabb.apps.googleusercontent.com';
 const PERMITIDOS = ['agrega-usuarios-autorizados@example.com']; // Reemplaza por los correos permitidos; no dejes el ejemplo.
 const PREFIJO = 'Movimientos - ';
 const COLUMNAS = 18;
