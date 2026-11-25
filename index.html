@@ -807,6 +807,22 @@ button,input,select,textarea{font-family:inherit}
 </style>
 </head>
 <body>
+<noscript><p style="padding:16px;font-family:Georgia,serif">Esta página necesita JavaScript activado para funcionar.</p></noscript>
+<script>
+/* Aviso visible si algo falla al cargar (útil en celulares). */
+(function(){
+  function show(t){
+    try{
+      var d=document.getElementById('loadErr');
+      if(!d){d=document.createElement('div');d.id='loadErr';d.style.cssText='position:fixed;left:8px;right:8px;bottom:8px;z-index:99999;background:#fff4f2;border:2px solid #b1413a;color:#3b0b0b;padding:12px;font:14px Georgia,serif;border-radius:8px';document.body.appendChild(d);}
+      d.textContent='Error al cargar la app: '+t+' Prueba abrir el enlace directamente en Chrome o Safari (no desde WhatsApp ni otra app) y actualiza el navegador.';
+    }catch(e){}
+  }
+  window.addEventListener('error',function(e){show(String(e.message||'desconocido'));});
+  window.addEventListener('unhandledrejection',function(e){show(String(e.reason||'desconocido'));});
+  try{ if(typeof BigInt==='undefined') show('Tu navegador es demasiado antiguo.'); }catch(e){}
+})();
+</script>
 <section id="gate" class="gate" aria-labelledby="gateTitle">
   <div class="card gatecard">
     <h1 id="gateTitle" class="type-page-title" tabindex="-1">Registro de movimientos personales</h1>
@@ -820,17 +836,17 @@ button,input,select,textarea{font-family:inherit}
     </div>
     <div id="gsiButton" aria-label="Iniciar sesión con Google"></div>
     <p id="gateStatus" class="help" role="status" aria-live="polite">Cargando el inicio de sesión de Google…</p>
-    <p class="help">Usamos tu cuenta solo para identificarte (nombre y correo). Al cerrar sesión se borran de esta página los movimientos aún no enviados; la hoja que configuraste se recuerda en este navegador.</p>
+    <p class="help">Usamos tu cuenta solo para identificarte (nombre y correo). Tus movimientos se guardan en una hoja de tu propio Google Drive. Al cerrar sesión se borran de esta página los movimientos aún no enviados.</p>
   </div>
 </section>
 <div class="wrap" id="appRoot" hidden>
   <header class="app">
     <h1 class="type-page-title">Registro de movimientos personales</h1>
     <p class="type-page-description">Registra el dinero que ya se movió: una fila por movimiento. No calcula saldos, deudas pendientes ni análisis.</p>
-    <p class="notice" role="note">Tu hoja de Google Sheets se recuerda en este navegador para tu cuenta: la configuras una sola vez y puedes cambiarla en la pestaña <strong>Google Sheets</strong>. Los movimientos que ya llegaron a la hoja permanecen allí. Los que no se hayan enviado y tus listas personalizadas se pierden al cerrar sesión o recargar; también puedes usar <strong>Exportar CSV</strong>.</p>
+    <p class="notice" role="note">Tus movimientos se guardan en una hoja de Google Sheets creada en <strong>tu propio Google Drive</strong>. La primera vez se crea sola y después se reconoce en cualquier dispositivo con la misma cuenta. Para cambiar de hoja (por ejemplo, el próximo año) usa la pestaña <strong>Google Sheets</strong>. Los movimientos que no se hayan enviado y tus listas personalizadas se pierden al cerrar sesión o recargar; también puedes usar <strong>Exportar CSV</strong>.</p>
     <div id="userBar" class="userbar"><div class="who"><strong id="userName"></strong> <span id="userEmail" class="muted"></span></div><button type="button" class="btn btn-secondary btn-sm" id="btnLogout">Cerrar sesión</button></div>
   </header>
-  <div id="authBar" class="banner info" role="status" hidden><p id="authBarText"></p><div id="reauthBtn"></div></div>
+  <div id="authBar" class="banner info" role="status" hidden><p id="authBarText"></p><div id="reauthBtn"><button type="button" class="btn btn-primary btn-sm" id="btnConnectBar">Conectar Google Drive</button></div></div>
 
   <nav class="tabs" role="tablist" aria-label="Secciones">
     <button type="button" id="tab-registrar" role="tab" aria-selected="true" aria-controls="view-registrar" tabindex="0" data-view="registrar">Registrar</button>
@@ -842,7 +858,7 @@ button,input,select,textarea{font-family:inherit}
   <main>
     <section id="view-registrar" role="tabpanel" aria-labelledby="tab-registrar" tabindex="0">
       <div class="syncbar">
-        <label for="destSel" class="type-field-label">Destino en Google Sheets</label>
+        <label for="destSel" class="type-field-label">Hoja de Google Sheets</label>
         <select id="destSel" class="input"></select>
         <p id="syncChip" class="help" role="status" aria-live="polite"></p>
       </div>
@@ -874,10 +890,11 @@ button,input,select,textarea{font-family:inherit}
     </section>
 
     <section id="view-sheets" role="tabpanel" aria-labelledby="tab-sheets" tabindex="0" hidden>
-      <h2 id="h-sheets" class="type-section-title" style="margin-bottom:12px">Integración con Google Sheets</h2>
+      <h2 id="h-sheets" class="type-section-title" style="margin-bottom:12px">Tu hoja de Google Sheets</h2>
       <div class="card">
-        <h3 class="type-subsection-title">Destinos guardados</h3>
-        <p class="help" style="margin-bottom:12px">Un destino es una aplicación de Apps Script conectada a una hoja de Google. Se configura una sola vez y se recuerda en este navegador; para usar otra plantilla (por ejemplo el próximo año) agrega un nuevo destino, márcalo como activo y quita el anterior si ya no lo necesitas. Tu cuenta de Google decide en qué pestaña se escribe: cada persona solo escribe y modifica su propia pestaña. Cada movimiento que guardes, edites o elimines se envía al destino activo.</p>
+        <h3 class="type-subsection-title">Conexión con tu Google Drive</h3>
+        <p class="help" style="margin-bottom:12px">Tus movimientos se guardan en una hoja que se crea en <strong>tu propio Google Drive</strong>, solo con tu cuenta. La app solo puede ver las hojas que ella misma crea, no el resto de tu Drive. La primera vez se crea sola y después se reconoce en cualquier dispositivo donde inicies sesión con la misma cuenta. La conexión dura cerca de una hora; si vence, vuelve a pulsar el botón.</p>
+        <div class="actions-bar" style="margin:0 0 12px"><button type="button" class="btn btn-primary" id="btnConnect">Conectar Google Drive</button></div>
         <div id="destList"></div>
         <div class="actions-bar" style="margin-top:12px">
           <button type="button" class="btn btn-secondary" id="btnRetry">Reintentar envíos pendientes</button>
@@ -886,35 +903,23 @@ button,input,select,textarea{font-family:inherit}
         <p id="sheetMsg" class="help" role="status" aria-live="polite"></p>
       </div>
       <div class="card">
-        <h3 class="type-subsection-title">Agregar o cambiar la hoja de destino</h3>
-        <div id="destForm" role="form" aria-label="Agregar destino a Google Sheets" style="margin-top:12px">
-          <div class="field"><label for="dName">Nombre del destino</label><input id="dName" class="input" type="text" maxlength="60" placeholder="Ej.: Hoja del equipo"></div>
-          <div class="field"><label for="dUrl">URL de la aplicación web (termina en /exec)</label><input id="dUrl" class="input" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off"></div>
-          <div class="field"><label class="chk"><input id="dOwn" type="checkbox"> Confirmo que esta URL es de mi propio Apps Script o de uno de mi organización.</label><p class="help">Cualquier URL de script.google.com sería aceptada; si pegas la de un tercero, tus movimientos se enviarían a su hoja.</p></div>
-          <div class="field"><label class="chk"><input id="dLenient" type="checkbox"> Aceptar envíos sin confirmación <span class="opt">(solo si tu navegador bloquea la respuesta de Google)</span></label><p class="help">Por defecto, un movimiento solo se marca como enviado cuando Google responde que lo recibió. Con esta opción se marca como enviado aunque no se pueda leer la respuesta; deberás comprobarlo en tu hoja.</p></div>
+        <h3 class="type-subsection-title">Crear una hoja nueva (por ejemplo, para el próximo año)</h3>
+        <div id="destForm" role="form" aria-label="Crear hoja nueva" style="margin-top:12px">
+          <div class="field"><label for="dName">Nombre de la hoja nueva</label><input id="dName" class="input" type="text" maxlength="80" placeholder="Ej.: Registro de movimientos 2028"></div>
           <p id="destErr" class="field-error" role="alert"></p>
-          <button type="button" id="btnAddDest" class="btn btn-primary">Guardar destino</button>
+          <button type="button" id="btnNewSheet" class="btn btn-secondary">Crear hoja nueva y usarla</button>
+          <p class="help">La hoja anterior se conserva en tu Drive. La hoja activa queda guardada con tu cuenta, así que no tendrás que elegirla de nuevo en otro dispositivo.</p>
         </div>
       </div>
       <div class="card">
-        <h3 class="type-subsection-title">Configuración inicial (la hace una sola vez quien administra la hoja)</h3>
+        <h3 class="type-subsection-title">Configuración inicial (la hace una sola vez quien administra la app)</h3>
         <ol class="steps">
-          <li>En Google Cloud Console, ve a <strong>Google Auth Platform → Clientes</strong> y crea un ID de cliente de tipo <em>Aplicación web</em>. En «Orígenes autorizados de JavaScript» agrega la dirección HTTPS donde publicarás esta página (solo esquema y dominio, por ejemplo <code>https://miusuario.github.io</code>).</li>
-          <li>En la pantalla inicial de esta app, pega ese ID de cliente y pulsa «Activar inicio con Google». Las direcciones abiertas como archivo local o vista previa no son orígenes autorizados; publica el HTML en HTTPS.</li>
-          <li>Publica el archivo HTML en esa dirección HTTPS. Desde un archivo local o desde una vista previa, Google no permite iniciar sesión.</li>
-          <li>Abre tu hoja en Google Sheets → <strong>Extensiones → Apps Script</strong>, pega el código de abajo, escribe el mismo ID en <code>CLIENT_ID</code> y reemplaza el ejemplo de <code>PERMITIDOS</code> por los correos exactos autorizados. Sin esa lista el servidor no escribe.</li>
-          <li>Pulsa <strong>Implementar → Nueva implementación → Aplicación web</strong>: «Ejecutar como» <em>Yo</em>, «Quién tiene acceso» <em>Cualquier persona</em>. Autoriza los permisos, incluido el de conectarse a un servicio externo: se usa para que Google confirme el inicio de sesión.</li>
-          <li>Copia la URL que termina en <code>/exec</code>, agrégala arriba como destino y pulsa «Probar conexión» con tu sesión iniciada.</li>
+          <li>En Google Cloud Console abre <strong>APIs y servicios → Biblioteca</strong> y habilita <strong>Google Sheets API</strong> y <strong>Google Drive API</strong>.</li>
+          <li>En <strong>Google Auth Platform → Acceso a los datos</strong> agrega el permiso <code>https://www.googleapis.com/auth/drive.file</code>.</li>
+          <li>Si la app está en modo de prueba, agrega los correos de las personas que la usarán en <strong>Público → Usuarios de prueba</strong> (o publica la app).</li>
+          <li>Comprueba que la dirección de esta página esté en «Orígenes autorizados de JavaScript» del ID de cliente.</li>
         </ol>
-        <p class="banner err" role="note">Aislamiento: cada petición se valida en el servidor contra Google; la pestaña se asigna mediante el identificador estable de la cuenta y los correos se contrastan con <code>PERMITIDOS</code>. La app web es pública, pero sin esa lista configurada el servidor rechaza escrituras. Importante: Apps Script consulta <code>tokeninfo</code>, que Google documenta para desarrollo y depuración. Esta configuración es un prototipo, no una solución recomendada para producción con datos financieros. Para un despliegue real, conviene usar Firebase Authentication y reglas de Firestore por usuario, o un servidor propio que valide tokens con la biblioteca oficial de Google.</p>
-        <p class="help">Cada fila se identifica por el ID del movimiento. Por eso, reenviar nunca crea duplicados. Los cambios no enviados se conservan solo mientras esta página siga abierta; comprueba que el destino indique «Al día» antes de salir.</p>
-        <details class="code">
-          <summary>Ver código de Apps Script</summary>
-          <label for="gsCode" class="type-field-label" style="margin-top:8px;display:block">Código para pegar en Apps Script</label>
-          <textarea id="gsCode" class="input" readonly></textarea>
-          <div class="actions-bar" style="margin-top:8px"><button type="button" class="btn btn-secondary" id="gsCopy">Copiar código</button></div>
-          <p id="gsMsg" class="help" role="status"></p>
-        </details>
+        <p class="help">Cada fila se identifica por el ID del movimiento. Por eso, reenviar nunca crea duplicados. No cambies el nombre de la pestaña «Movimientos» ni muevas la fila de encabezados. Los movimientos que no se hayan enviado se pierden al cerrar sesión o recargar; comprueba que la hoja indique «Al día» antes de salir.</p>
       </div>
     </section>
 
@@ -1785,13 +1790,12 @@ function enterApp(){
 }
 function wipeSession(){
   SHEET.dests.forEach(d => clearTimeout(d.timer));
-  SHEET.dests = []; SHEET.activeId = ''; listSig = '';   // solo memoria: el destino guardado para tu cuenta se conserva
+  SHEET.dests = []; SHEET.activeId = ''; listSig = '';
   records.length = 0;
   Object.assign(DB, freshDB()); accSeq = 2;
   document.querySelectorAll('dialog[open]').forEach(d => d.close());
   S = blank(); editingId = null; attempted = false;
-  ['#dName', '#dUrl'].forEach(s => { $(s).value = ''; });
-  $('#dOwn').checked = false; $('#dLenient').checked = false; $('#destErr').textContent = ''; $('#sheetMsg').textContent = '';
+  $('#dName').value = ''; $('#destErr').textContent = ''; $('#sheetMsg').textContent = ''; resetDrive();
   $('#csvText').value = ''; $('#confirmDl').replaceChildren(); $('#detailDl').replaceChildren();
   $('#confirmSection').hidden = true; $('#formSection').hidden = false;
   $('#editBanner').hidden = true; $('#savedMsg').hidden = true; btnCancelEdit.hidden = true; $('#h-reg').textContent = 'Nuevo movimiento';
@@ -1815,36 +1819,24 @@ $('#btnLogout').addEventListener('click', () => {
 });
 $('#logoutOk').addEventListener('click', () => { $('#dlgLogout').close(); doLogout(); });
 $('#logoutCancel').addEventListener('click', () => $('#dlgLogout').close());
-let reauthRendered = false;
-function authBarShow(text){
+function authBarShow(text, withBtn){
   $('#authBarText').textContent = text; $('#authBar').hidden = false;
-  if (!reauthRendered && GOOGLE_CLIENT_ID && window.google && google.accounts && google.accounts.id){
-    try { google.accounts.id.renderButton($('#reauthBtn'), {theme:'outline', size:'medium', text:'signin_with', locale:'es'}); reauthRendered = true; } catch (_) {}
-  }
+  $('#reauthBtn').hidden = withBtn === false;
 }
 function authBarHide(){ $('#authBar').hidden = true; }
-function checkSession(){
-  if (!SESSION || SESSION.demo) return;
-  const left = SESSION.exp * 1000 - Date.now();
-  if (left <= 0) authBarShow('Tu sesión de Google venció. Inicia sesión de nuevo con la misma cuenta para reanudar los envíos a Google Sheets; no pierdes lo que ya registraste.');
-  else if (left < 5 * 60000) authBarShow('Tu sesión de Google vence en ' + Math.max(1, Math.ceil(left / 60000)) + ' min. Renuévala con la misma cuenta para que los envíos a Google Sheets no se detengan.');
-  else authBarHide();
-}
-setInterval(checkSession, 30000);
 
 function onCredential(resp){
   let p;
-  try { p = parseJwt(resp && resp.credential); } catch (_) { return SESSION ? authBarShow('No se pudo leer la credencial de Google.') : gateStatus('No se pudo leer la credencial de Google. Inténtalo de nuevo.'); }
+  try { p = parseJwt(resp && resp.credential); } catch (_) { return SESSION ? authBarShow('No se pudo leer la credencial de Google.', false) : gateStatus('No se pudo leer la credencial de Google. Inténtalo de nuevo.'); }
   const err = claimsError(p);
-  if (err) return SESSION ? authBarShow(err) : gateStatus(err);
+  if (err) return SESSION ? authBarShow(err, false) : gateStatus(err);
   if (SESSION && !SESSION.demo){
-    if (SESSION.sub !== p.sub){ authBarShow('Iniciaste sesión con otra cuenta (' + p.email + '). Para cambiar de cuenta, primero cierra sesión; así los datos no se mezclan.'); return; }
-    SESSION.token = resp.credential; SESSION.exp = Number(p.exp);
-    authBarHide(); retryAll(); renderSync(); return;
+    if (SESSION.sub !== p.sub) authBarShow('Iniciaste sesión con otra cuenta (' + p.email + '). Para cambiar de cuenta, primero cierra sesión; así los datos no se mezclan.', false);
+    return;
   }
   SESSION = {token:resp.credential, exp:Number(p.exp), sub:p.sub, email:String(p.email).toLowerCase(), name:p.name || p.email};
-  restoreDestinations();
   enterApp();
+  authBarShow('Último paso: conecta Google Drive para guardar tus movimientos en tu propia hoja. Se crea sola la primera vez y después se reconoce en cualquier dispositivo.');
 }
 let gsiLoading = false, gsiInitialized = false;
 function initGsi(){
@@ -1852,6 +1844,7 @@ function initGsi(){
   try {
     google.accounts.id.initialize({client_id:GOOGLE_CLIENT_ID, callback:onCredential, auto_select:false, cancel_on_tap_outside:true});
     google.accounts.id.renderButton($('#gsiButton'), {theme:'outline', size:'large', text:'signin_with', shape:'rectangular', locale:'es', width:280});
+    if (google.accounts.oauth2) tokenClient = google.accounts.oauth2.initTokenClient({client_id:GOOGLE_CLIENT_ID, scope:DRIVE_SCOPE, callback:onToken, error_callback:e => driveMsg('No se pudo abrir la ventana de permisos de Google' + (e && e.type ? ' (' + e.type + ')' : '') + '. Revisa que tu navegador no bloquee ventanas emergentes.')});
     gsiInitialized = true; $('#gateSetup').hidden = true;
     gateStatus('Elige tu cuenta de Google para entrar.');
   } catch (e) { gateStatus('No se pudo iniciar el acceso con Google. Revisa el ID de cliente y el origen autorizado.'); }
@@ -1884,182 +1877,107 @@ $('#btnConfigureGoogle').addEventListener('click', () => {
   initAuth();
 });
 
-/* ---------- Google Sheets (Apps Script que valida tu cuenta de Google) ---------- */
-const GS_CODE = String.raw`// Pega este código en Extensiones > Apps Script de TU hoja de Google.
-// 1) Pega en CLIENT_ID el mismo ID de cliente de Google que usa la app.
-// 2) ES OBLIGATORIO: agrega a PERMITIDOS los correos autorizados. Sin lista, el servidor no escribe.
-// Cada persona tiene una pestaña propia derivada del identificador Google sub, no del dato que envía el navegador.
-const CLIENT_ID = '636611674872-ql5j8qqr1d4qgngml45rrb5st2sfeabb.apps.googleusercontent.com';
-const PERMITIDOS = ['agrega-usuarios-autorizados@example.com']; // Reemplaza por los correos permitidos; no dejes el ejemplo.
-const PREFIJO = 'Movimientos - ';
-const COLUMNAS = 18;
-const NUMERICAS = [11, 13, 14]; // Monto, Tasa de cambio, Monto en COP
-const MAX_FILAS = 50;
-const MAX_MONTO = 999999999.99;
-const MAX_TASA = 9999.9999;
-const MAX_COP = 9999999999999;
-const ID_RE = /^MOV-\d{14}-[A-Z0-9]{4,8}$/;
-
-function doPost(e) {
-  const lock = LockService.getScriptLock();
-  let bloqueado = false;
-  try {
-    const d = JSON.parse(e.postData.contents);
-    const u = verificar(d.token);
-    if (!u.ok) return salida({ ok: false, fatal: true, auth: !!u.auth, error: u.error });
-    if (!Array.isArray(d.headers) || d.headers.length !== COLUMNAS) return salida({ ok: false, fatal: true, error: 'Encabezados inválidos.' });
-    lock.waitLock(20000);
-    bloqueado = true;
-    const ss = SpreadsheetApp.getActiveSpreadsheet();
-    const nombre = nombrePestana(u.sub);
-    const sh = ss.getSheetByName(nombre) || ss.insertSheet(nombre);
-    if (sh.getLastRow() === 0) {
-      const rg = sh.getRange(1, 1, 1, COLUMNAS);
-      rg.setNumberFormats([d.headers.map(function () { return '@'; })]);
-      rg.setValues([d.headers.map(String)]);
-      sh.setFrozenRows(1);
-    } else {
-      const actuales = sh.getRange(1, 1, 1, COLUMNAS).getValues()[0].map(String);
-      if (actuales.some(function (v, i) { return v !== String(d.headers[i]); })) return salida({ ok: false, fatal: true, error: 'Tu pestaña ya existe con encabezados distintos.' });
-    }
-    if (d.action === 'ping') return salida({ ok: true, v: 3, email: u.email, tab: nombre });
-    if (d.action === 'delete') {
-      if (!ID_RE.test(String(d.id))) return salida({ ok: false, fatal: true, error: 'ID inválido.' });
-      const fila = indice(sh)[d.id];
-      if (fila) sh.deleteRow(fila);
-      return salida({ ok: true, v: 3 });
-    }
-    if (d.action !== 'upsert' && d.action !== 'bulk') return salida({ ok: false, fatal: true, error: 'Acción no permitida.' });
-    const filas = d.action === 'bulk' ? d.rows : [d.row];
-    if (!Array.isArray(filas) || filas.length < 1 || filas.length > MAX_FILAS) {
-      return salida({ ok: false, fatal: true, error: 'Cantidad de filas no permitida.' });
-    }
-    const limpias = [];
-    for (let i = 0; i < filas.length; i++) {
-      const f = filas[i];
-      if (!Array.isArray(f) || f.length !== COLUMNAS || !ID_RE.test(String(f[0]))) {
-        return salida({ ok: false, fatal: true, error: 'Fila inválida.' });
-      }
-      const monto = Number(f[10]), tasa = Number(f[12]), cop = Number(f[13]);
-      if (!(monto > 0 && monto <= MAX_MONTO && tasa > 0 && tasa <= MAX_TASA && cop > 0 && cop <= MAX_COP)) return salida({ ok: false, fatal: true, error: 'Monto o tasa fuera de los límites permitidos.' });
-      limpias.push(f.map(function (v, j) {
-        if (NUMERICAS.indexOf(j + 1) >= 0) return Number(v);
-        const texto = String(v == null ? '' : v).slice(0, 500);
-        return /^[\s\u0000\uFEFF]*[=+\-@]/.test(texto) ? "'" + texto : texto;
-      }));
-    }
-    const idx = indice(sh);
-    const nuevas = [];
-    limpias.forEach(function (f) {
-      const fila = idx[f[0]];
-      if (fila > 0) escribir(sh, fila, [f]);
-      else if (fila !== -1) { idx[f[0]] = -1; nuevas.push(f); }
-    });
-    if (nuevas.length) {
-      const inicio = Math.max(sh.getLastRow(), 1) + 1;
-      const fin = inicio + nuevas.length - 1;
-      if (fin > sh.getMaxRows()) sh.insertRowsAfter(sh.getMaxRows(), fin - sh.getMaxRows());
-      escribir(sh, inicio, nuevas);
-    }
-    return salida({ ok: true, v: 3 });
-  } catch (err) {
-    return salida({ ok: false, error: String(err) });
-  } finally {
-    if (bloqueado) lock.releaseLock();
-  }
-}
-
-// Verifica con Google que el token es válido, vigente, emitido para ESTA aplicación y de un correo verificado.
-function verificar(token) {
-  if (!CLIENT_ID || CLIENT_ID.indexOf('PEGA-AQUI') === 0) return { ok: false, error: 'El administrador debe definir CLIENT_ID en el código.' };
-  if (typeof token !== 'string' || token.length < 100 || token.length > 6000) return { ok: false, auth: true, error: 'Falta iniciar sesión con Google.' };
-  const cache = CacheService.getScriptCache();
-  const huella = Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, token));
-  let t = null;
-  const guardado = cache.get(huella);
-  if (guardado) t = JSON.parse(guardado);
-  if (!t || Number(t.exp) * 1000 <= Date.now()) {
-    const r = UrlFetchApp.fetch('https://oauth2.googleapis.com/tokeninfo', { method: 'post', payload: { id_token: token }, muteHttpExceptions: true });
-    if (r.getResponseCode() !== 200) return { ok: false, auth: true, error: 'Sesión de Google inválida o vencida. Inicia sesión de nuevo.' };
-    const x = JSON.parse(r.getContentText());
-    t = { aud: x.aud, iss: x.iss, exp: x.exp, email: x.email, email_verified: x.email_verified, sub: x.sub };
-    const vida = Math.min(600, Math.floor(Number(t.exp) - Date.now() / 1000));
-    if (vida > 0) cache.put(huella, JSON.stringify(t), vida);
-  }
-  if (t.aud !== CLIENT_ID) return { ok: false, auth: true, error: 'La sesión no corresponde a esta aplicación.' };
-  if (['accounts.google.com', 'https://accounts.google.com'].indexOf(t.iss) < 0) return { ok: false, auth: true, error: 'La sesión no fue emitida por Google.' };
-  if (Number(t.exp) * 1000 <= Date.now()) return { ok: false, auth: true, error: 'Sesión de Google vencida. Inicia sesión de nuevo.' };
-  if (String(t.email_verified) !== 'true' || !t.email) return { ok: false, error: 'Tu correo de Google no está verificado.' };
-  const email = String(t.email).toLowerCase();
-  const permitidos = PERMITIDOS.map(function (x) { return String(x).trim().toLowerCase(); }).filter(function (x) { return x && x !== 'agrega-usuarios-autorizados@example.com'; });
-  if (!permitidos.length) return { ok: false, error: 'El administrador debe configurar PERMITIDOS con los correos autorizados antes de usar este destino.' };
-  if (permitidos.indexOf(email) < 0) return { ok: false, error: 'Tu cuenta (' + email + ') no está autorizada en este destino.' };
-  if (!t.sub) return { ok: false, auth: true, error: 'Google no devolvió un identificador de cuenta válido.' };
-  return { ok: true, email: email, sub: String(t.sub) };
-}
-
-function nombrePestana(sub) {
-  const hash = Utilities.base64EncodeWebSafe(Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, String(sub))).replace(/=+$/g, '').slice(0, 16);
-  return (PREFIJO + hash).slice(0, 100);
-}
-
-// Las columnas de texto se guardan como texto plano: nada de lo que escribas se interpreta como fórmula.
-function escribir(sh, fila, filas) {
-  const rango = sh.getRange(fila, 1, filas.length, COLUMNAS);
-  const formato = [];
-  for (let i = 0; i < COLUMNAS; i++) formato.push(NUMERICAS.indexOf(i + 1) >= 0 ? '0.00##' : '@');
-  rango.setNumberFormats(filas.map(function () { return formato; }));
-  rango.setValues(filas);
-}
-
-function indice(sh) {
-  const n = sh.getLastRow();
-  const mapa = {};
-  if (n < 2) return mapa;
-  const ids = sh.getRange(2, 1, n - 1, 1).getValues();
-  for (let i = 0; i < ids.length; i++) mapa[String(ids[i][0])] = i + 2;
-  return mapa;
-}
-
-function salida(o) {
-  return ContentService.createTextOutput(JSON.stringify(o)).setMimeType(ContentService.MimeType.JSON);
-}`;
+/* ---------- Google Drive y Google Sheets del propio usuario ----------
+   Cada persona escribe en una hoja creada en SU Drive. El permiso usado (drive.file) solo da acceso a las
+   hojas que esta app crea; la app las vuelve a encontrar en cualquier dispositivo con la misma cuenta. */
+const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+const TAB = 'Movimientos';
+const DRIVE = {token:'', exp:0, ready:false, loading:false};
+let tokenClient = null;
 const SHEET = {dests:[], activeId:'', seq:0};
-const URL_RE = /^https:\/\/script\.google\.com\/(a\/macros\/[^\/]+\/|macros\/)s\/[\w-]+\/exec$/;
 const NUMERIC_KEYS = ['monto', 'tasa', 'montoCop'];
-/* El destino se recuerda por cuenta de Google en este navegador. No se guardan movimientos ni el token de sesión. */
-const destKey = () => SESSION && SESSION.sub ? 'registroMovimientos.destino.v2.' + SESSION.sub : '';
-function saveDestinations(){
-  const k = destKey(); if (!k) return false;
-  try {
-    const a = SHEET.dests.find(d => d.id === SHEET.activeId);
-    localStorage.setItem(k, JSON.stringify({destinations:SHEET.dests.map(x => ({name:x.name, url:x.url, lenient:!!x.lenient})), activeName:a ? a.name : ''}));
-    return true;
-  } catch (_) { return false; }
-}
-function restoreDestinations(){
-  const k = destKey(); if (!k) return;
-  try {
-    const raw = localStorage.getItem(k); if (!raw) return;
-    const saved = JSON.parse(raw);
-    if (!saved || !Array.isArray(saved.destinations)) return;
-    SHEET.dests = saved.destinations.filter(x => x && typeof x.name === 'string' && URL_RE.test(String(x.url || ''))).map(x => ({
-      id:'d' + (++SHEET.seq), name:x.name.replace(/\s+/g, ' ').trim(), url:String(x.url), lenient:!!x.lenient,
-      synced:{}, queue:[], inflight:null, busy:false, error:'', fatal:false, auth:false, attempts:0, timer:null, lastOk:'', unconfirmed:false}));
-    const a = SHEET.dests.find(x => norm(x.name) === norm(saved.activeName || ''));
-    SHEET.activeId = a ? a.id : (SHEET.dests[0] ? SHEET.dests[0].id : '');
-  } catch (_) {}
-}
+const haveToken = () => !!DRIVE.token && Date.now() < DRIVE.exp - 60000;
+const driveMsg = t => { $('#sheetMsg').textContent = t; if (!$('#authBar').hidden) $('#authBarText').textContent = t; };
+function resetDrive(){ DRIVE.token = ''; DRIVE.exp = 0; DRIVE.ready = false; DRIVE.loading = false; }
+function newDest(){ return {id:'d' + (++SHEET.seq), sheetId:'', name:'', link:'', flag:false, tabId:null, synced:{}, queue:[], inflight:null, busy:false, error:'', fatal:false, auth:false, attempts:0, timer:null, lastOk:'', unconfirmed:false}; }
 const activeDest = () => SHEET.dests.find(d => d.id === SHEET.activeId) || null;
-function sheetRow(r){
-  return COLS.map(([k]) => {
-    const v = r[k];
-    if (NUMERIC_KEYS.includes(k) && v !== '' && v != null) return Number(v);
-    return String(v == null ? '' : v);
-  });
+function friendly(e){
+  if (e && e.auth) return 'Tu conexión con Google Drive venció. Pulsa «Conectar Google Drive».';
+  const base = 'No se pudo completar: ' + ((e && e.message) || 'error desconocido') + '.';
+  return (e && e.status === 403) ? base + ' Revisa que las APIs de Google Sheets y Google Drive estén habilitadas en Google Cloud y que tu cuenta tenga acceso a la app.' : base;
 }
+function connectDrive(){
+  if (!tokenClient){ driveMsg('El acceso de Google aún no está listo. Espera unos segundos e inténtalo de nuevo.'); return; }
+  driveMsg('Abriendo la ventana de permisos de Google…');
+  try { tokenClient.requestAccessToken({hint: SESSION ? SESSION.email : ''}); }
+  catch (e) { driveMsg('No se pudo abrir la ventana de Google. Revisa que tu navegador no bloquee ventanas emergentes.'); }
+}
+function onToken(resp){
+  if (!resp || resp.error){ driveMsg('No se pudo conectar Google Drive' + (resp && resp.error ? ' (' + resp.error + ')' : '') + '. Inténtalo de nuevo.'); return; }
+  if (!google.accounts.oauth2.hasGrantedAllScopes(resp, DRIVE_SCOPE)){ driveMsg('Para guardar tu hoja debes aceptar el permiso de Google Drive. Vuelve a pulsar «Conectar Google Drive» y marca la casilla.'); return; }
+  DRIVE.token = resp.access_token; DRIVE.exp = Date.now() + (Number(resp.expires_in) || 3600) * 1000;
+  loadSheets();
+}
+async function gapi(url, opt){
+  if (!haveToken()){ const e = new Error('Sin conexión con Drive'); e.auth = true; throw e; }
+  const r = await fetch(url, Object.assign({headers:{Authorization:'Bearer ' + DRIVE.token, 'Content-Type':'application/json'}}, opt || {}));
+  if (r.status === 401){ DRIVE.token = ''; const e = new Error('Sesión de Drive vencida'); e.auth = true; throw e; }
+  let j = null; try { j = await r.json(); } catch (_) {}
+  if (!r.ok){ const e = new Error((j && j.error && j.error.message) || ('Error ' + r.status)); e.status = r.status; e.fatal = r.status === 400 || r.status === 403 || r.status === 404; throw e; }
+  return j;
+}
+async function listSheets(){
+  const q = "appProperties has { key='registroMov' and value='1' } and trashed=false and mimeType='application/vnd.google-apps.spreadsheet'";
+  const j = await gapi('https://www.googleapis.com/drive/v3/files?q=' + encodeURIComponent(q) + '&orderBy=createdTime%20desc&pageSize=50&fields=' + encodeURIComponent('files(id,name,webViewLink,appProperties)'));
+  return j.files || [];
+}
+async function createSheet(title){
+  const j = await gapi('https://sheets.googleapis.com/v4/spreadsheets', {method:'POST', body:JSON.stringify({properties:{title}, sheets:[{properties:{title:TAB, gridProperties:{frozenRowCount:1}}}]})});
+  const id = j.spreadsheetId;
+  await gapi('https://www.googleapis.com/drive/v3/files/' + id + '?fields=id', {method:'PATCH', body:JSON.stringify({appProperties:{registroMov:'1', activa:'1'}})});
+  await gapi('https://sheets.googleapis.com/v4/spreadsheets/' + id + '/values/' + encodeURIComponent(TAB + '!A1:R1') + '?valueInputOption=RAW', {method:'PUT', body:JSON.stringify({values:[COLS.map(c => c[1])]})});
+  return {id, name:j.properties.title, link:j.spreadsheetUrl};
+}
+async function persistActive(){
+  const a = activeDest(); if (!a || !haveToken()) return;
+  for (const x of SHEET.dests){
+    const want = x === a;
+    if (x.flag === want) continue;
+    try { await gapi('https://www.googleapis.com/drive/v3/files/' + x.sheetId + '?fields=id', {method:'PATCH', body:JSON.stringify({appProperties:{activa: want ? '1' : '0'}})}); x.flag = want; } catch (_) {}
+  }
+}
+function queueUnsynced(d){
+  const q = queuedIds(d), todo = records.filter(r => !d.synced[r.id] && !q.has(r.id));
+  for (let i = 0; i < todo.length; i += 25){
+    const part = todo.slice(i, i + 25);
+    d.queue.push({type:'bulk', id:'__bulk__' + Date.now() + '_' + i, rows:part.map(r => sheetRow(r.row)), ids:part.map(r => r.id)});
+  }
+}
+async function loadSheets(){
+  if (DRIVE.loading) return;
+  DRIVE.loading = true;
+  try {
+    driveMsg('Buscando tu hoja en Google Drive…');
+    let files = await listSheets();
+    if (!files.length){
+      driveMsg('Creando tu hoja en tu Google Drive (solo la primera vez)…');
+      const f = await createSheet('Registro de movimientos ' + new Date().getFullYear());
+      files = [{id:f.id, name:f.name, webViewLink:f.link, appProperties:{activa:'1'}}];
+    }
+    const prev = new Map(SHEET.dests.map(x => [x.sheetId, x]));
+    SHEET.dests = files.map(f => {
+      const o = prev.get(f.id) || newDest();
+      o.sheetId = f.id; o.name = f.name; o.link = f.webViewLink || ('https://docs.google.com/spreadsheets/d/' + f.id + '/edit');
+      o.flag = (f.appProperties || {}).activa === '1';
+      return o;
+    });
+    const act = SHEET.dests.find(x => x.id === SHEET.activeId) || SHEET.dests.find(x => x.flag) || SHEET.dests[0];
+    SHEET.activeId = act.id; listSig = ''; DRIVE.ready = true;
+    authBarHide();
+    queueUnsynced(act);
+    renderSync(); retryAll();
+    driveMsg('Listo: tus movimientos se guardan en «' + act.name + '».');
+  } catch (e) { driveMsg(friendly(e)); if (e.auth) authBarShow(friendly(e)); }
+  finally { DRIVE.loading = false; renderSync(); }
+}
+
+const sheetRow = r => COLS.map(([k]) => {
+  const v = r[k];
+  if (NUMERIC_KEYS.includes(k) && v !== '' && v != null) return Number(v);
+  return String(v == null ? '' : v);
+});
 const queuedIds = d => { const s = new Set(); d.queue.forEach(o => (o.type === 'bulk' ? o.ids : [o.id]).forEach(i => s.add(i))); return s; };
-/* Una cola por destino. Una edición o eliminación va al destino activo y a todo destino donde la fila ya existe o está pendiente. */
+/* Una cola por hoja. Una edición o eliminación va a la hoja activa y a toda hoja donde la fila ya existe o está pendiente. */
 function targetsFor(id){ return SHEET.dests.filter(d => d.id === SHEET.activeId || d.synced[id] || queuedIds(d).has(id)); }
 function enqueue(op){
   const ts = targetsFor(op.id);
@@ -2071,22 +1989,38 @@ function enqueue(op){
 }
 function enqueueRecord(rec){ enqueue({type:'upsert', id:rec.id, row:sheetRow(rec.row)}); }
 const payloadOf = op => op.type === 'delete' ? {action:'delete', id:op.id} : op.type === 'bulk' ? {action:'bulk', rows:op.rows} : {action:'upsert', row:op.row};
+
+async function readIds(d){
+  const j = await gapi('https://sheets.googleapis.com/v4/spreadsheets/' + d.sheetId + '/values/' + encodeURIComponent(TAB + '!A:A'));
+  const ids = {};
+  (j.values || []).forEach((v, i) => { if (v && v[0] != null && i > 0) ids[String(v[0])] = i + 1; });
+  return ids;
+}
+async function ensureTabId(d){
+  if (d.tabId != null) return d.tabId;
+  const j = await gapi('https://sheets.googleapis.com/v4/spreadsheets/' + d.sheetId + '?fields=sheets.properties(sheetId,title)');
+  const t = (j.sheets || []).map(s => s.properties).find(p => p.title === TAB);
+  if (!t){ const e = new Error('No se encontró la pestaña «' + TAB + '» en la hoja. No la cambies de nombre.'); e.fatal = true; throw e; }
+  d.tabId = t.sheetId; return d.tabId;
+}
 async function send(d, payload){
-  if (!SESSION) return {ok:false, fatal:true, auth:true, error:'Inicia sesión con Google para enviar a Google Sheets.'};
-  if (SESSION.exp * 1000 - Date.now() < 15000) return {ok:false, fatal:true, auth:true, error:'Tu sesión de Google venció. Renuévala con el botón de arriba y se reanudarán los envíos.'};
-  const body = JSON.stringify(Object.assign({token:SESSION.token, headers:COLS.map(c => c[1])}, payload));
-  const headers = {'Content-Type':'text/plain;charset=utf-8'};
-  let res;
-  try { res = await fetch(d.url, {method:'POST', headers, body}); }
-  catch (e1) {
-    if (!d.lenient) return {ok:false, error:'No se pudo leer la respuesta de Google (sin conexión o bloqueada por el navegador). No se marcó como enviado. Si tu navegador bloquea la lectura, activa «Aceptar envíos sin confirmación» en este destino y verifica tu hoja.'};
-    try { await fetch(d.url, {method:'POST', mode:'no-cors', headers, body}); return {ok:true, confirmed:false}; }
-    catch (e2) { return {ok:false, error:'Sin conexión con Google.'}; }
-  }
-  let j = null; try { j = await res.json(); } catch (_) {}
-  if (!j) return {ok:false, fatal:true, error:'Respuesta inesperada. Revisa que el código esté implementado como aplicación web con acceso «Cualquier persona» y que la URL termine en /exec.'};
-  if (j.ok) return {ok:true, confirmed:true, v:j.v || 1, email:j.email, tab:j.tab};
-  return {ok:false, fatal:!!j.fatal, auth:!!j.auth, error:j.error || 'El código de Apps Script respondió con un error.'};
+  try {
+    if (!haveToken()) return {ok:false, fatal:true, auth:true, error:'Conecta Google Drive con el botón «Conectar Google Drive» para guardar en tu hoja.'};
+    const base = 'https://sheets.googleapis.com/v4/spreadsheets/' + d.sheetId;
+    if (payload.action === 'ping'){ const j = await gapi(base + '?fields=properties.title'); return {ok:true, confirmed:true, tab:j.properties.title}; }
+    const ids = await readIds(d);
+    if (payload.action === 'delete'){
+      const row = ids[payload.id];
+      if (row){ const tabId = await ensureTabId(d); await gapi(base + ':batchUpdate', {method:'POST', body:JSON.stringify({requests:[{deleteDimension:{range:{sheetId:tabId, dimension:'ROWS', startIndex:row - 1, endIndex:row}}}]})}); }
+      return {ok:true, confirmed:true};
+    }
+    const rows = payload.action === 'bulk' ? payload.rows : [payload.row];
+    const updates = [], adds = [];
+    rows.forEach(r => { const row = ids[String(r[0])]; if (row) updates.push({range:TAB + '!A' + row + ':R' + row, values:[r]}); else adds.push(r); });
+    if (updates.length) await gapi(base + '/values:batchUpdate', {method:'POST', body:JSON.stringify({valueInputOption:'RAW', data:updates})});
+    if (adds.length) await gapi(base + '/values/' + encodeURIComponent(TAB + '!A:R') + ':append?valueInputOption=RAW&insertDataOption=INSERT_ROWS', {method:'POST', body:JSON.stringify({values:adds})});
+    return {ok:true, confirmed:true};
+  } catch (e) { return {ok:false, auth:!!e.auth, fatal:!!e.fatal || !!e.auth, error:friendly(e)}; }
 }
 async function flushDest(d){
   if (d.busy || !SHEET.dests.includes(d)) return;
@@ -2099,12 +2033,12 @@ async function flushDest(d){
       if (!SHEET.dests.includes(d)) return;
       if (!res.ok){
         d.error = res.error; d.fatal = !!res.fatal; d.auth = !!res.auth;
-        if (d.auth && SESSION && !SESSION.demo) authBarShow('Google Sheets pidió renovar tu sesión: ' + res.error);
+        if (d.auth && SESSION) authBarShow(res.error);
         if (!d.fatal){ d.attempts++; d.timer = setTimeout(() => flushDest(d), Math.min(300000, 15000 * Math.pow(2, d.attempts - 1))); }
         break;
       }
       const i = d.queue.indexOf(op); if (i > -1) d.queue.splice(i, 1);   // se quita exactamente el envío confirmado
-      d.error = ''; d.fatal = false; d.auth = false; d.attempts = 0; d.lastOk = stamp().slice(11, 16); d.unconfirmed = !res.confirmed;
+      d.error = ''; d.fatal = false; d.auth = false; d.attempts = 0; d.lastOk = stamp().slice(11, 16); d.unconfirmed = false;
       if (op.type === 'delete') delete d.synced[op.id];
       else if (op.type === 'bulk') op.ids.forEach(id => { d.synced[id] = true; });
       else d.synced[op.id] = true;
@@ -2117,48 +2051,41 @@ function destStatus(d){
   if (d.busy) return 'Enviando…';
   if (d.error) return d.auth ? 'En pausa: ' + d.error : d.fatal ? 'Detenido: ' + d.error + ' Corrígelo y pulsa «Reintentar envíos pendientes».' : 'No se pudo enviar: ' + d.error + ' Se reintenta automáticamente (intento ' + d.attempts + ').';
   if (d.queue.length) return d.queue.length + ' envíos pendientes.';
-  return 'Al día' + (d.lastOk ? ' (último envío ' + d.lastOk + (d.unconfirmed ? ', sin confirmación de Google: revisa tu hoja' : '') + ')' : '') + '.';
+  return 'Al día' + (d.lastOk ? ' (último envío ' + d.lastOk + ')' : '') + '.';
 }
 let listSig = '';
 function renderSync(){
   const d = activeDest(), chip = $('#syncChip'), sel = $('#destSel');
   const want = SHEET.dests.map(x => x.id + ':' + x.name).join('|');
   if (sel.dataset.sig !== want){
-    sel.replaceChildren(h('option', {value:'', text:'Ninguno (solo en esta página)'}), ...SHEET.dests.map(x => h('option', {value:x.id, text:x.name})));
+    sel.replaceChildren(h('option', {value:'', text:'Ninguna (solo en esta página)'}), ...SHEET.dests.map(x => h('option', {value:x.id, text:x.name})));
     sel.dataset.sig = want;
   }
   sel.value = SHEET.activeId;
-  if (!d){ chip.textContent = 'Sin destino seleccionado: los movimientos solo quedan en esta página.'; }
+  if (!d){ chip.textContent = DRIVE.ready ? 'Sin hoja seleccionada: los movimientos solo quedan en esta página.' : 'Aún no conectas Google Drive: pulsa «Conectar Google Drive» para guardar en tu hoja.'; }
   else {
     const u = unsyncedFor(d);
-    let t = 'Destino «' + d.name + '». ' + destStatus(d);
+    let t = 'Hoja «' + d.name + '». ' + destStatus(d);
     if (u) t += ' ' + u + (u === 1 ? ' movimiento guardado aún no está' : ' movimientos guardados aún no están') + ' en esta hoja: usa «Enviar todos los movimientos guardados».';
     const otros = SHEET.dests.filter(x => x !== d && (x.queue.length || x.error));
-    if (otros.length) t += ' Otros destinos con envíos pendientes: ' + otros.map(x => x.name).join(', ') + '.';
+    if (otros.length) t += ' Otras hojas con envíos pendientes: ' + otros.map(x => x.name).join(', ') + '.';
     chip.textContent = t;
   }
-  const sig = SHEET.dests.map(x => x.id + x.name + x.lenient + (x.id === SHEET.activeId)).join('|');
+  $('#btnConnect').textContent = haveToken() ? 'Reconectar Google Drive' : 'Conectar Google Drive';
+  const sig = SHEET.dests.map(x => x.id + x.name + (x.id === SHEET.activeId)).join('|');
   const list = $('#destList');
   if (sig !== listSig){
     listSig = sig; list.replaceChildren();
-    if (!SHEET.dests.length) list.append(h('p', {class:'help', text:'Aún no hay hoja configurada. Agrégala abajo una sola vez; quedará guardada para tu cuenta en este navegador.'}));
+    if (!SHEET.dests.length) list.append(h('p', {class:'help', text:'Aún no hay hoja conectada. Pulsa «Conectar Google Drive»: la primera vez se crea una hoja nueva en tu Drive y después se reconoce sola en cualquier dispositivo.'}));
     for (const x of SHEET.dests){
       const act = x.id === SHEET.activeId;
       list.append(h('div', {class:'dest' + (act ? ' active' : '')},
-        h('div', {class:'meta'}, h('strong', {text:x.name + (act ? ' (activo)' : '')}),
-          h('div', {class:'help', text:x.url.slice(0, 60) + '… · ' + (x.lenient ? 'acepta envíos sin confirmación' : 'confirmación estricta')}),
+        h('div', {class:'meta'}, h('strong', {text:x.name + (act ? ' (activa)' : '')}),
+          h('div', {class:'help'}, h('a', {href:x.link, target:'_blank', rel:'noopener', text:'Abrir en Google Sheets'})),
           h('div', {class:'help', 'data-st':x.id})),
         h('div', {class:'btns'},
-          h('button', {type:'button', class:'btn btn-secondary btn-sm', disabled:act, text:'Usar como activo', 'aria-label':'Usar ' + x.name + ' como destino activo', onclick:() => { SHEET.activeId = x.id; saveDestinations(); renderSync(); flushDest(x); }}),
-          h('button', {type:'button', class:'btn btn-secondary btn-sm', text:'Probar conexión', 'aria-label':'Probar conexión con ' + x.name, onclick:() => testDest(x)}),
-          h('button', {type:'button', class:'btn btn-secondary btn-sm', text:x.lenient ? 'Exigir confirmación' : 'Permitir sin confirmación', 'aria-label':'Cambiar modo de confirmación de ' + x.name, onclick:() => { x.lenient = !x.lenient; saveDestinations(); renderSync(); }}),
-          h('button', {type:'button', class:'btn btn-danger btn-sm', text:'Quitar', 'aria-label':'Quitar destino ' + x.name, onclick:() => {
-            clearTimeout(x.timer);
-            SHEET.dests = SHEET.dests.filter(y => y !== x);
-            if (SHEET.activeId === x.id) SHEET.activeId = '';
-            saveDestinations();
-            $('#sheetMsg').textContent = 'Destino «' + x.name + '» quitado de la app' + (x.queue.length ? ' (se descartaron ' + x.queue.length + ' envíos pendientes)' : '') + '. No se borró nada de tu hoja.'; renderSync();
-          }}))));
+          h('button', {type:'button', class:'btn btn-secondary btn-sm', disabled:act, text:'Usar esta hoja', 'aria-label':'Usar ' + x.name + ' como hoja activa', onclick:async () => { SHEET.activeId = x.id; renderSync(); flushDest(x); await persistActive(); }}),
+          h('button', {type:'button', class:'btn btn-secondary btn-sm', text:'Probar conexión', 'aria-label':'Probar conexión con ' + x.name, onclick:() => testDest(x)}))));
     }
   }
   list.querySelectorAll('[data-st]').forEach(el => { const x = SHEET.dests.find(y => y.id === el.dataset.st); if (x) el.textContent = destStatus(x); });
@@ -2168,12 +2095,9 @@ function renderSync(){
 async function testDest(x){
   const m = $('#sheetMsg'); m.textContent = 'Probando conexión con «' + x.name + '»…';
   const r = await send(x, {action:'ping'});
-  m.textContent = !r.ok ? 'Falló la prueba con «' + x.name + '»: ' + r.error
-    : !r.confirmed ? 'Se envió la prueba a «' + x.name + '», pero no se pudo leer la respuesta de Google. Abre tu hoja y verifica que exista tu pestaña con encabezados.'
-    : r.v < 3 ? 'Hay conexión, pero el código de Apps Script es una versión anterior y no valida tu cuenta. Reemplázalo por el código actual de esta página y vuelve a implementar.'
-    : 'Conexión confirmada. Tus movimientos se guardarán en tu pestaña asignada («' + (r.tab || 'cuenta de Google') + '»).';
+  m.textContent = r.ok ? 'Conexión confirmada con «' + r.tab + '». Tus movimientos se guardan en la pestaña «' + TAB + '».' : 'Falló la prueba con «' + x.name + '»: ' + r.error;
 }
-$('#destSel').addEventListener('change', e => { SHEET.activeId = e.target.value; saveDestinations(); renderSync(); const d = activeDest(); if (d) flushDest(d); });
+$('#destSel').addEventListener('change', async e => { SHEET.activeId = e.target.value; renderSync(); const d = activeDest(); if (d) flushDest(d); await persistActive(); });
 function retryAll(){ SHEET.dests.forEach(x => { if (x.queue.length){ x.error = ''; x.fatal = false; x.auth = false; x.attempts = 0; flushDest(x); } }); }
 $('#btnRetry').addEventListener('click', retryAll);
 $('#btnBulk').addEventListener('click', () => {
@@ -2186,31 +2110,22 @@ $('#btnBulk').addEventListener('click', () => {
   $('#sheetMsg').textContent = 'Enviando ' + records.length + ' movimientos a «' + d.name + '». Los que ya existan se actualizan, no se duplican.';
   renderSync(); flushDest(d);
 });
-function addDest(){
-  const name = $('#dName').value.replace(/\s+/g, ' ').trim(), url = $('#dUrl').value.trim();
-  const err = $('#destErr');
-  const fail = t => { err.textContent = 'Error: ' + t; };
-  if (!SESSION) return fail('Inicia sesión con Google para conectar Google Sheets.');
-  if (!name) return fail('escribe un nombre para el destino.');
-  if (SHEET.dests.some(x => norm(x.name) === norm(name))) return fail('ya existe un destino con ese nombre.');
-  if (!URL_RE.test(url)) return fail('la URL debe ser la de una aplicación web de Google Apps Script (https://script.google.com/macros/s/…/exec).');
-  if (!$('#dOwn').checked) return fail('confirma que la URL es de tu propio Apps Script o de uno de tu organización.');
-  err.textContent = '';
-  const d = {id:'d' + (++SHEET.seq), name, url, lenient:$('#dLenient').checked, synced:{}, queue:[], inflight:null, busy:false, error:'', fatal:false, auth:false, attempts:0, timer:null, lastOk:'', unconfirmed:false};
-  SHEET.dests.push(d);
-  if (!SHEET.activeId) SHEET.activeId = d.id;
-  const persisted = saveDestinations();
-  $('#dName').value = ''; $('#dUrl').value = ''; $('#dOwn').checked = false; $('#dLenient').checked = false;
-  $('#sheetMsg').textContent = 'Destino «' + name + '» guardado' + (SHEET.activeId === d.id ? ' y seleccionado como activo' : '') + (persisted ? '. Quedó guardado para tu cuenta en este navegador' : '. Este navegador no permitió recordarlo') + '. Usa «Probar conexión» para verificarlo.';
-  renderSync();
-}
-$('#btnAddDest').addEventListener('click', addDest);
-$('#destForm').addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.matches('input[type="text"],input[type="url"]')){ e.preventDefault(); addDest(); } });
-$('#gsCode').value = GS_CODE;
-$('#gsCopy').addEventListener('click', async () => {
-  const ta = $('#gsCode'), msg = $('#gsMsg');
-  try { await navigator.clipboard.writeText(ta.value); msg.textContent = 'Código copiado.'; }
-  catch (_) { ta.focus(); ta.select(); let ok = false; try { ok = document.execCommand('copy'); } catch (__) {} msg.textContent = ok ? 'Código copiado.' : 'Quedó seleccionado: cópialo con Ctrl+C.'; }
+$('#btnConnect').addEventListener('click', connectDrive);
+$('#btnConnectBar').addEventListener('click', connectDrive);
+$('#btnNewSheet').addEventListener('click', async () => {
+  const err = $('#destErr'); err.textContent = '';
+  const name = $('#dName').value.replace(/\s+/g, ' ').trim() || ('Registro de movimientos ' + new Date().getFullYear());
+  if (!haveToken()){ err.textContent = 'Error: primero pulsa «Conectar Google Drive».'; return; }
+  if (SHEET.dests.some(x => norm(x.name) === norm(name))) { err.textContent = 'Error: ya existe una hoja con ese nombre.'; return; }
+  try {
+    driveMsg('Creando «' + name + '» en tu Google Drive…');
+    const f = await createSheet(name);
+    const d = newDest(); d.sheetId = f.id; d.name = f.name; d.link = f.link; d.flag = true;
+    SHEET.dests.unshift(d); SHEET.activeId = d.id; listSig = '';
+    await persistActive();
+    $('#dName').value = '';
+    renderSync(); driveMsg('Listo: se creó «' + f.name + '» y ahora es tu hoja activa.');
+  } catch (e) { driveMsg(friendly(e)); }
 });
 window.addEventListener('online', () => { SHEET.dests.forEach(x => { if (x.queue.length && !x.fatal){ x.attempts = 0; flushDest(x); } }); });
 document.addEventListener('submit', e => e.preventDefault());
