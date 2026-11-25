@@ -820,14 +820,14 @@ button,input,select,textarea{font-family:inherit}
     </div>
     <div id="gsiButton" aria-label="Iniciar sesión con Google"></div>
     <p id="gateStatus" class="help" role="status" aria-live="polite">Cargando el inicio de sesión de Google…</p>
-    <p class="help">Usamos tu cuenta solo para identificarte (nombre y correo). Al cerrar sesión, los movimientos y la configuración se borran de esta página.</p>
+    <p class="help">Usamos tu cuenta solo para identificarte (nombre y correo). Al cerrar sesión se borran de esta página los movimientos aún no enviados; la hoja que configuraste se recuerda en este navegador.</p>
   </div>
 </section>
 <div class="wrap" id="appRoot" hidden>
   <header class="app">
     <h1 class="type-page-title">Registro de movimientos personales</h1>
     <p class="type-page-description">Registra el dinero que ya se movió: una fila por movimiento. No calcula saldos, deudas pendientes ni análisis.</p>
-    <p class="notice" role="note">Solo ves los movimientos que registraste en esta sesión. Los movimientos y la configuración viven solo mientras esta página esté abierta y se borran al cerrar sesión. Para conservarlos, conecta <strong>Google Sheets</strong> o usa <strong>Exportar CSV</strong> en la pestaña Movimientos.</p>
+    <p class="notice" role="note">Tu hoja de Google Sheets se recuerda en este navegador para tu cuenta: la configuras una sola vez y puedes cambiarla en la pestaña <strong>Google Sheets</strong>. Los movimientos que ya llegaron a la hoja permanecen allí. Los que no se hayan enviado y tus listas personalizadas se pierden al cerrar sesión o recargar; también puedes usar <strong>Exportar CSV</strong>.</p>
     <div id="userBar" class="userbar"><div class="who"><strong id="userName"></strong> <span id="userEmail" class="muted"></span></div><button type="button" class="btn btn-secondary btn-sm" id="btnLogout">Cerrar sesión</button></div>
   </header>
   <div id="authBar" class="banner info" role="status" hidden><p id="authBarText"></p><div id="reauthBtn"></div></div>
@@ -877,7 +877,7 @@ button,input,select,textarea{font-family:inherit}
       <h2 id="h-sheets" class="type-section-title" style="margin-bottom:12px">Integración con Google Sheets</h2>
       <div class="card">
         <h3 class="type-subsection-title">Destinos guardados</h3>
-        <p class="help" style="margin-bottom:12px">Un destino es una aplicación de Apps Script conectada a una hoja de Google. Tu cuenta de Google decide en qué pestaña se escribe: cada persona solo escribe y modifica su propia pestaña. Cada movimiento que guardes, edites o elimines se envía al destino activo.</p>
+        <p class="help" style="margin-bottom:12px">Un destino es una aplicación de Apps Script conectada a una hoja de Google. Se configura una sola vez y se recuerda en este navegador; para usar otra plantilla (por ejemplo el próximo año) agrega un nuevo destino, márcalo como activo y quita el anterior si ya no lo necesitas. Tu cuenta de Google decide en qué pestaña se escribe: cada persona solo escribe y modifica su propia pestaña. Cada movimiento que guardes, edites o elimines se envía al destino activo.</p>
         <div id="destList"></div>
         <div class="actions-bar" style="margin-top:12px">
           <button type="button" class="btn btn-secondary" id="btnRetry">Reintentar envíos pendientes</button>
@@ -886,7 +886,7 @@ button,input,select,textarea{font-family:inherit}
         <p id="sheetMsg" class="help" role="status" aria-live="polite"></p>
       </div>
       <div class="card">
-        <h3 class="type-subsection-title">Agregar destino</h3>
+        <h3 class="type-subsection-title">Agregar o cambiar la hoja de destino</h3>
         <div id="destForm" role="form" aria-label="Agregar destino a Google Sheets" style="margin-top:12px">
           <div class="field"><label for="dName">Nombre del destino</label><input id="dName" class="input" type="text" maxlength="60" placeholder="Ej.: Hoja del equipo"></div>
           <div class="field"><label for="dUrl">URL de la aplicación web (termina en /exec)</label><input id="dUrl" class="input" type="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off"></div>
@@ -1785,7 +1785,7 @@ function enterApp(){
 }
 function wipeSession(){
   SHEET.dests.forEach(d => clearTimeout(d.timer));
-  SHEET.dests = []; SHEET.activeId = ''; listSig = '';
+  SHEET.dests = []; SHEET.activeId = ''; listSig = '';   // solo memoria: el destino guardado para tu cuenta se conserva
   records.length = 0;
   Object.assign(DB, freshDB()); accSeq = 2;
   document.querySelectorAll('dialog[open]').forEach(d => d.close());
@@ -1843,6 +1843,7 @@ function onCredential(resp){
     authBarHide(); retryAll(); renderSync(); return;
   }
   SESSION = {token:resp.credential, exp:Number(p.exp), sub:p.sub, email:String(p.email).toLowerCase(), name:p.name || p.email};
+  restoreDestinations();
   enterApp();
 }
 let gsiLoading = false, gsiInitialized = false;
@@ -2026,6 +2027,29 @@ function salida(o) {
 const SHEET = {dests:[], activeId:'', seq:0};
 const URL_RE = /^https:\/\/script\.google\.com\/(a\/macros\/[^\/]+\/|macros\/)s\/[\w-]+\/exec$/;
 const NUMERIC_KEYS = ['monto', 'tasa', 'montoCop'];
+/* El destino se recuerda por cuenta de Google en este navegador. No se guardan movimientos ni el token de sesión. */
+const destKey = () => SESSION && SESSION.sub ? 'registroMovimientos.destino.v2.' + SESSION.sub : '';
+function saveDestinations(){
+  const k = destKey(); if (!k) return false;
+  try {
+    const a = SHEET.dests.find(d => d.id === SHEET.activeId);
+    localStorage.setItem(k, JSON.stringify({destinations:SHEET.dests.map(x => ({name:x.name, url:x.url, lenient:!!x.lenient})), activeName:a ? a.name : ''}));
+    return true;
+  } catch (_) { return false; }
+}
+function restoreDestinations(){
+  const k = destKey(); if (!k) return;
+  try {
+    const raw = localStorage.getItem(k); if (!raw) return;
+    const saved = JSON.parse(raw);
+    if (!saved || !Array.isArray(saved.destinations)) return;
+    SHEET.dests = saved.destinations.filter(x => x && typeof x.name === 'string' && URL_RE.test(String(x.url || ''))).map(x => ({
+      id:'d' + (++SHEET.seq), name:x.name.replace(/\s+/g, ' ').trim(), url:String(x.url), lenient:!!x.lenient,
+      synced:{}, queue:[], inflight:null, busy:false, error:'', fatal:false, auth:false, attempts:0, timer:null, lastOk:'', unconfirmed:false}));
+    const a = SHEET.dests.find(x => norm(x.name) === norm(saved.activeName || ''));
+    SHEET.activeId = a ? a.id : (SHEET.dests[0] ? SHEET.dests[0].id : '');
+  } catch (_) {}
+}
 const activeDest = () => SHEET.dests.find(d => d.id === SHEET.activeId) || null;
 function sheetRow(r){
   return COLS.map(([k]) => {
@@ -2117,7 +2141,7 @@ function renderSync(){
   const list = $('#destList');
   if (sig !== listSig){
     listSig = sig; list.replaceChildren();
-    if (!SHEET.dests.length) list.append(h('p', {class:'help', text:'Aún no hay destinos. Agrega el primero abajo.'}));
+    if (!SHEET.dests.length) list.append(h('p', {class:'help', text:'Aún no hay hoja configurada. Agrégala abajo una sola vez; quedará guardada para tu cuenta en este navegador.'}));
     for (const x of SHEET.dests){
       const act = x.id === SHEET.activeId;
       list.append(h('div', {class:'dest' + (act ? ' active' : '')},
@@ -2125,13 +2149,14 @@ function renderSync(){
           h('div', {class:'help', text:x.url.slice(0, 60) + '… · ' + (x.lenient ? 'acepta envíos sin confirmación' : 'confirmación estricta')}),
           h('div', {class:'help', 'data-st':x.id})),
         h('div', {class:'btns'},
-          h('button', {type:'button', class:'btn btn-secondary btn-sm', disabled:act, text:'Usar como activo', 'aria-label':'Usar ' + x.name + ' como destino activo', onclick:() => { SHEET.activeId = x.id; renderSync(); flushDest(x); }}),
+          h('button', {type:'button', class:'btn btn-secondary btn-sm', disabled:act, text:'Usar como activo', 'aria-label':'Usar ' + x.name + ' como destino activo', onclick:() => { SHEET.activeId = x.id; saveDestinations(); renderSync(); flushDest(x); }}),
           h('button', {type:'button', class:'btn btn-secondary btn-sm', text:'Probar conexión', 'aria-label':'Probar conexión con ' + x.name, onclick:() => testDest(x)}),
-          h('button', {type:'button', class:'btn btn-secondary btn-sm', text:x.lenient ? 'Exigir confirmación' : 'Permitir sin confirmación', 'aria-label':'Cambiar modo de confirmación de ' + x.name, onclick:() => { x.lenient = !x.lenient; renderSync(); }}),
+          h('button', {type:'button', class:'btn btn-secondary btn-sm', text:x.lenient ? 'Exigir confirmación' : 'Permitir sin confirmación', 'aria-label':'Cambiar modo de confirmación de ' + x.name, onclick:() => { x.lenient = !x.lenient; saveDestinations(); renderSync(); }}),
           h('button', {type:'button', class:'btn btn-danger btn-sm', text:'Quitar', 'aria-label':'Quitar destino ' + x.name, onclick:() => {
             clearTimeout(x.timer);
             SHEET.dests = SHEET.dests.filter(y => y !== x);
             if (SHEET.activeId === x.id) SHEET.activeId = '';
+            saveDestinations();
             $('#sheetMsg').textContent = 'Destino «' + x.name + '» quitado de la app' + (x.queue.length ? ' (se descartaron ' + x.queue.length + ' envíos pendientes)' : '') + '. No se borró nada de tu hoja.'; renderSync();
           }}))));
     }
@@ -2148,7 +2173,7 @@ async function testDest(x){
     : r.v < 3 ? 'Hay conexión, pero el código de Apps Script es una versión anterior y no valida tu cuenta. Reemplázalo por el código actual de esta página y vuelve a implementar.'
     : 'Conexión confirmada. Tus movimientos se guardarán en tu pestaña asignada («' + (r.tab || 'cuenta de Google') + '»).';
 }
-$('#destSel').addEventListener('change', e => { SHEET.activeId = e.target.value; renderSync(); const d = activeDest(); if (d) flushDest(d); });
+$('#destSel').addEventListener('change', e => { SHEET.activeId = e.target.value; saveDestinations(); renderSync(); const d = activeDest(); if (d) flushDest(d); });
 function retryAll(){ SHEET.dests.forEach(x => { if (x.queue.length){ x.error = ''; x.fatal = false; x.auth = false; x.attempts = 0; flushDest(x); } }); }
 $('#btnRetry').addEventListener('click', retryAll);
 $('#btnBulk').addEventListener('click', () => {
@@ -2174,8 +2199,9 @@ function addDest(){
   const d = {id:'d' + (++SHEET.seq), name, url, lenient:$('#dLenient').checked, synced:{}, queue:[], inflight:null, busy:false, error:'', fatal:false, auth:false, attempts:0, timer:null, lastOk:'', unconfirmed:false};
   SHEET.dests.push(d);
   if (!SHEET.activeId) SHEET.activeId = d.id;
+  const persisted = saveDestinations();
   $('#dName').value = ''; $('#dUrl').value = ''; $('#dOwn').checked = false; $('#dLenient').checked = false;
-  $('#sheetMsg').textContent = 'Destino «' + name + '» guardado' + (SHEET.activeId === d.id ? ' y seleccionado como activo' : '') + '. Usa «Probar conexión» para verificarlo.';
+  $('#sheetMsg').textContent = 'Destino «' + name + '» guardado' + (SHEET.activeId === d.id ? ' y seleccionado como activo' : '') + (persisted ? '. Quedó guardado para tu cuenta en este navegador' : '. Este navegador no permitió recordarlo') + '. Usa «Probar conexión» para verificarlo.';
   renderSync();
 }
 $('#btnAddDest').addEventListener('click', addDest);
